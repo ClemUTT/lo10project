@@ -1,5 +1,5 @@
 <?php 
-$curl = curl_init('http://api.openweathermap.org/data/2.5/weather?q=Troyes&appid=f53f9bfb3f09f4560e8f8720d4a6685d&units=metric&lang=fr');
+$curl = curl_init('http://api.openweathermap.org/data/2.5/weather?q=Troyes&appid={APIKEY}&units=metric&lang=fr');
 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 $data = curl_exec($curl);
 
