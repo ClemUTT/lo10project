@@ -7,7 +7,7 @@ if($data === false) {
     var_dump(curl_error($curl));
 
 } else {
-   
+//p
     //var_dump(curl_getinfo($curl, CURLINFO_HTTP_CODE));  
    $data = json_decode($data, true);
    echo 'Il fait ' . $data['main']['temp'] . '°C';
