@@ -1,7 +1,7 @@
 <?php 
 require 'vendor/autoload.php';
 
-$client = new MongoDB\Client('mongodb+srv://anas-admin:anas1998@cluster0.qyzeh.mongodb.net/testdb');
+$client = new MongoDB\Client('mongodb+srv://[username]:[password]@cluster0.qyzeh.mongodb.net/testdb');
 
 $terraindb = $client->terraindb;
 $terrains = $terraindb->terrains;
