@@ -1,4 +1,6 @@
 <?php 
+//7.2.14
+echo php_ini_loaded_file();
 $curl = curl_init('http://api.openweathermap.org/data/2.5/weather?q=Troyes&appid={APIKEY}&units=metric&lang=fr');
 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 $data = curl_exec($curl);
