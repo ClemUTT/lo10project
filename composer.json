@@ -1,5 +1,8 @@
 {
     "require": {
-        "mongodb/mongodb": "^1.7"
+        "mongodb/mongodb": "^1.7",
+        "guzzlehttp/guzzle": "^7.3",
+        "slim/slim": "3.*",
+        "slim/psr7": "^1.4"
     }
 }

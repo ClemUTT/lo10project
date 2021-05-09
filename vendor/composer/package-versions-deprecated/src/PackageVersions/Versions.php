@@ -34,9 +34,23 @@ final class Versions
      */
     const VERSIONS          = array (
   'composer/package-versions-deprecated' => '1.11.99.1@7413f0b55a051e89485c5cb9f765fe24bb02a7b6',
+  'fig/http-message-util' => '1.1.5@9d94dc0154230ac39e5bf89398b324a86f63f765',
+  'guzzlehttp/guzzle' => '7.3.0@7008573787b430c1c1f650e3722d9bba59967628',
+  'guzzlehttp/promises' => '1.4.1@8e7d04f1f6450fef59366c399cfad4b9383aa30d',
+  'guzzlehttp/psr7' => '1.8.2@dc960a912984efb74d0a90222870c72c87f10c91',
   'jean85/pretty-package-versions' => '1.6.0@1e0104b46f045868f11942aea058cd7186d6c303',
   'mongodb/mongodb' => '1.7.2@38b685191c047a57275d6ccd2ea5c50f23638485',
-  '__root__' => '1.0.0+no-version-set@',
+  'nikic/fast-route' => 'v1.3.0@181d480e08d9476e61381e04a71b34dc0432e812',
+  'pimple/pimple' => 'v3.4.0@86406047271859ffc13424a048541f4531f53601',
+  'psr/container' => '1.1.1@8622567409010282b7aeebe4bb841fe98b58dcaf',
+  'psr/http-client' => '1.0.1@2dfb5f6c5eff0e91e20e913f8c5452ed95b86621',
+  'psr/http-factory' => '1.0.1@12ac7fcd07e5b077433f5f2bee95b3a771bf61be',
+  'psr/http-message' => '1.0.1@f6561bf28d520154e4b0ec72be95418abe6d9363',
+  'ralouphie/getallheaders' => '3.0.3@120b605dfeb996808c31b6477290a714d356e822',
+  'slim/psr7' => '1.4@0dca983ca32a26f4a91fb11173b7b9eaee29e9d6',
+  'slim/slim' => '3.12.3@1c9318a84ffb890900901136d620b4f03a59da38',
+  'symfony/polyfill-php80' => 'v1.22.1@dc3063ba22c2a1fd2f45ed856374d79114998f91',
+  '__root__' => 'dev-master@9c082c1eb8447d395c6b67da1abfd5722df055ff',
 );
 
     private function __construct()

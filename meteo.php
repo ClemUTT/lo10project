@@ -1,9 +1,10 @@
-<?php 
+<?php
 //7.2.14
-echo php_ini_loaded_file();
+/* echo php_ini_loaded_file();
 $curl = curl_init('http://api.openweathermap.org/data/2.5/weather?q=Troyes&appid={APIKEY}&units=metric&lang=fr');
 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 $data = curl_exec($curl);
+echo $data;
 
 if($data === false) {
     var_dump(curl_error($curl));
@@ -14,11 +15,26 @@ if($data === false) {
    $data = json_decode($data, true);
    echo 'Il fait ' . $data['main']['temp'] . '°C';
 }
-curl_close($curl);
-?>
- 
+curl_close($curl); */
 
- <!DOCTYPE html>
+
+
+
+
+// Patron Asynchronous Response Handler avec la bibliothèque guzzle
+
+
+require_once(__DIR__ . '/vendor/autoload.php');
+$client = new GuzzleHttp\Client();
+
+$promises = [
+    $client->getAsync('http://api.openweathermap.org/data/2.5/weather?q=Troyes&appid={APIKEY}&units=metric&lang=fr')->then(function ($response) {
+        
+         $data = json_decode($response->getBody(), true);
+
+         ?>
+
+<!DOCTYPE html>
 <html>
 <head>
     <!-- Required meta tags -->
@@ -60,6 +76,34 @@ curl_close($curl);
 
 </body>
 </html>
+
+
+
+
+         <?php
+         
+        
+        }),
+  
+];
+
+$results = GuzzleHttp\Promise\unwrap($promises);
+
+// Wait for the requests to complete, even if some of them fail
+$results = GuzzleHttp\Promise\settle($promises)->wait();
+
+
+
+?>
+
+
+
+
+
+
+ 
+
+
 
 
 
