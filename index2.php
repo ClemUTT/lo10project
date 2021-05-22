@@ -1,7 +1,7 @@
 <?php 
 require 'vendor/autoload.php';
 
-$client = new MongoDB\Client('mongodb+srv://[username]:[password]@cluster0.qyzeh.mongodb.net/testdb');
+$client = new MongoDB\Client('mongodb+srv://yvan_lo10:yvanlo10@cluster0.qyzeh.mongodb.net/testdb');
 
 $terraindb = $client->terraindb;
 $terrains = $terraindb->terrains;
@@ -105,42 +105,34 @@ $document3 = $terrains->findOne(
                 </div>
                    <!-- Fichiers Javascript -->
         <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw==" crossorigin=""></script>
-        <script type="text/javascript">
-            // On initialise la latitude et la longitude de Paris (centre de la carte)
-          //  var lat = <?php //echo $document['latitude']; ?>;
-          //  var lon = <?php //echo $document['longitude']; ?>;
-            var terrains = {
-                "Terrain1": {"lat": <?php echo $document['latitude'];?>, "lon": <?php echo $document['longitude']; ?>,  "type": "<?php echo $document['Type']; ?>", "pratique": "<?php echo $document['Pratique']; ?>"},
-                "Terrain2": {"lat": <?php echo $document2['latitude'];?>, "lon": <?php echo $document2['longitude']; ?>, "type": "<?php echo $document2['Type']; ?>", "pratique": "<?php echo $document2['Pratique']; ?>" },
-                "Terrain3": {"lat": <?php echo $document3['latitude'];?>, "lon": <?php echo $document3['longitude']; ?>, "type": "<?php echo $document3['Type']; ?>", "pratique": "<?php echo $document3['Pratique']; ?>" },
-            }
-            var macarte = null; 
-            // Fonction d'initialisation de la carte
-            function initMap() {
-                // Créer l'objet "macarte" et l'insèrer dans l'élément HTML qui a l'ID "map"
-                macarte = L.map('map').setView([48.2973451  , 4.0744009], 12);
-                // Leaflet ne récupère pas les cartes (tiles) sur un serveur par défaut. Nous devons lui préciser où nous souhaitons les récupérer. Ici, openstreetmap.fr
-                L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
-                    // Il est toujours bien de laisser le lien vers la source des données
-                    attribution: 'données © <a href="//osm.org/copyright">OpenStreetMap</a>/ODbL - rendu <a href="//openstreetmap.fr">OSM France</a>',
-                    minZoom: 1,
-                    maxZoom: 20
-                }).addTo(macarte);
-
-                for(terrain in terrains) {
-                var marker = L.marker([terrains[terrain].lat, terrains[terrain].lon]).addTo(macarte);
-                marker.bindPopup("<p> Type : "+terrains[terrain].type+"</p><p> Pratique : "+terrains[terrain].pratique+"</p>");
-
-                }
         
-            }
-            window.onload = function(){
-        // Fonction d'initialisation qui s'exécute lorsque le DOM est chargé
-        initMap(); 
-            };
-        </script>
-                
+        <script>
+        let map;
+        function initMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat:<?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> },
+            zoom: 12,
+        });
+
+        function addMarker(location) {
+
+            const marker = new google.maps.Marker({
+            position:location,
+            map:map,
+            });
+        }
+
+        addMarker({lat: <?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> });
+        addMarker({lat: <?php echo $document2['latitude']; ?>, lng: <?php echo $document2['longitude']; ?> });
+        addMarker({lat: <?php echo $document3['latitude']; ?>, lng: <?php echo $document3['longitude']; ?> });
+        }
+       </script>
+        <script
+       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCamyOsko-YreKmCaQe4YAg1Swcy1XGnmA&callback=initMap&libraries=places&v=weekly"
+       async
+       ></script>         
       </section>
+     
 
         <!-- About Section-->
         <section class="page-section bg-primary text-white mb-0" id="about">
