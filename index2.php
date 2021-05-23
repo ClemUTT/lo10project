@@ -218,6 +218,131 @@ $document3 = $terrains->findOne(
     
             </div>
         </section>
+
+        <section class="page-section" id="contact">
+            <div class="container">
+                <!-- Contact Section Heading-->
+                <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Types de terrain</h2>
+                <!-- Icon Divider-->
+                <div class="divider-custom">
+                    <div class="divider-custom-line"></div>
+                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                    <div class="divider-custom-line"></div>
+                </div>
+        <!-- Contact Section Form-->
+        <div class = "container">
+<?php
+$client = new GuzzleHttp\Client(array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false, ), ));
+
+$promises = [
+    $client->getAsync('http://api.openweathermap.org/data/2.5/weather?q=Troyes&appid=[APIKEY]&units=metric&lang=fr')->then(function ($response) {
+         $data = json_decode($response->getBody(), true);
+        }),
+
+        $client->getAsync('https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=[APIKEY]&user_id=14253409@N00&tags=eos,pitch,hockey,6D,365,astroturf,synthetic,goals,night,adobe,canon,challenge,dark,editing&tag_mode=all&format=json&nojsoncallback=1')->then(function ($response) {
+
+             $data = json_decode($response->getBody(), true);
+             $photos= $data['photos']['photo'];
+foreach($photos as $photo) {
+    $url= 'http://farm'.$photo['farm'].'.staticflickr.com/'.$photo['server'].'/'.$photo['id'].'_'.$photo['secret'].'.jpg';
+    ?>
+<div class="container">
+  <div class="row">
+    <div class="col-sm">
+    <img src="<?php echo $url; ?>">
+    </div>
+    <div class="col-sm">
+    <h1> Terrain Synthétique</h1>
+     <h4>Pratiquable même par temps de pluie</h4>
+     <h4>Privilégier des crampons AG</h4>
+    </div>
+    </div>
+</div>
+    
+
+<?php
+  
+
+
+    
+}
+            }),
+
+            $client->getAsync('https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=[APIKEY]&user_id=14469553@N05&tags=soccer,field&tag_mode=all&format=json&nojsoncallback=1')->then(function ($response) {
+
+                $data = json_decode($response->getBody(), true);
+                $photos= $data['photos']['photo'];
+   foreach($photos as $photo) {
+       $url1= 'http://farm'.$photo['farm'].'.staticflickr.com/'.$photo['server'].'/'.$photo['id'].'_'.$photo['secret'].'.jpg';
+       ?>
+
+
+<div class="container">
+  <div class="row">
+<div class="col-sm">
+<img src="<?php echo $url1; ?>">
+    </div>
+    <div class="col-sm">
+    <h1> Terrain en herbe</h1>
+    <h4>Privilégier des crampons FG par temps sec</h4>
+    <h4>Privilégier des crampons SG par temps de pluie</h4>
+    
+    </div>
+    
+  </div>
+</div>
+
+<?php
+       
+   }
+               }),   
+
+               $client->getAsync('https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=[APIKEY]&user_id=146944136@N03&text=Urbansoccer&per_page=1&format=json&nojsoncallback=1')->then(function ($response) {
+
+                $data = json_decode($response->getBody(), true);
+                $photos= $data['photos']['photo'];
+   foreach($photos as $photo) {
+       $url1= 'http://farm'.$photo['farm'].'.staticflickr.com/'.$photo['server'].'/'.$photo['id'].'_'.$photo['secret'].'.jpg';
+       ?>
+
+
+<div class="container">
+  <div class="row">
+<div class="col-sm">
+<img src="<?php echo $url1; ?>">
+    </div>
+    <div class="col-sm">
+    <h1> Terrain synthétique 5vs5</h1>
+    <h4>Privilégier des crampons TURF</h4>
+    
+    </div>
+    
+  </div>
+</div>
+
+<?php
+       
+   }
+               }),            
+               
+               
+  
+];
+
+$results = GuzzleHttp\Promise\unwrap($promises);
+
+// Wait for the requests to complete, even if some of them fail
+$results = GuzzleHttp\Promise\settle($promises)->wait();
+
+
+
+?>
+    
+    </div>
+    
+    
+            </div>
+        </section>
         <!-- Footer-->
         <footer class="footer text-center">
             <div class="container">
