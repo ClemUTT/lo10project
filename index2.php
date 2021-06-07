@@ -11,7 +11,7 @@ $document = $terrains->findOne(
 );
 
 $document2 = $terrains->findOne(
-     ['_id' => 2]
+    ['_id' => 2]
 );
 
 $document3 = $terrains->findOne(
@@ -109,30 +109,55 @@ $document3 = $terrains->findOne(
         <script>
         let map;
         function initMap() {
-        map = new google.maps.Map(document.getElementById("map"), {
-            center: { lat:<?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> },
-            zoom: 12,
-        });
-
-        function addMarker(porperty) {
-
-            const marker = new google.maps.Marker({
-            position:porperty.location,
-            map:map,
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat:<?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> },
+                zoom: 12,
             });
 
-            const detailwindow = new google.maps.InfoWindow({
-            content : porperty.content
-            });
+            function addMarker(porperty) {
+
+                const marker = new google.maps.Marker({
+                position:porperty.location,
+                map:map,
+                });
+
+                const detailwindow = new google.maps.InfoWindow({
+                content : porperty.content
+                });
+                
+                marker.addListener("click", ()=>{
+                detailwindow.open(map, marker);
+                })
+            }
+
+            <?php 
+            $nombre_document = $terrains->count();
+            $liste_document = array();
+            $meteo = ""; // ceci est à completer dès que la donnée sera disponible
+
+            // je crée un tableau qui stocke tous nos documents
+            for ($i=0; $i < $nombre_document ; $i++ ) {        
+                $liste_document[] =  $terrains->findOne(['_id' => ($i+1)]);
+            }
+
+            // j'affiche les marqueurs de terrain sur la carte en fonction de la météo
+            if($meteo == "pluie"){
+                for ($i=0; $i < $nombre_document; $i++) { 
+                    if($liste_document[$i]['Type'] == "Synthétique"){  ?>
+                        addMarker({location:{lat: <?php echo $liste_document[$i]['latitude']; ?>, lng: <?php echo $liste_document[$i]['longitude']; ?> }, content: "Type : <?php echo $liste_document[$i]['Type']; ?>" + "<br>Pratique : <?php echo $liste_document[$i]['Pratique']; ?>" });                   
+                        <?php  }
+                }
+            }else{
+                for ($i=0; $i < $nombre_document; $i++) { ?>
+                        addMarker({location:{lat: <?php echo $liste_document[$i]['latitude']; ?>, lng: <?php echo $liste_document[$i]['longitude']; ?> }, content: "Type : <?php echo $liste_document[$i]['Type']; ?>" + "<br>Pratique : <?php echo $liste_document[$i]['Pratique']; ?>" });                   
+                    <?php }
+            }?>
             
-            marker.addListener("click", ()=>{
-            detailwindow.open(map, marker);
-            })
-        }
-
-        addMarker({location:{lat: <?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> }, content: "Type : <?php echo $document['Type']; ?>" + "<br>Pratique : <?php echo $document['Pratique']; ?>" });
-        addMarker({location:{lat: <?php echo $document2['latitude']; ?>, lng: <?php echo $document2['longitude']; ?> }, content: "Type : <?php echo $document2['Type']; ?>" + "<br>Pratique : <?php echo $document2['Pratique']; ?>" });
-        addMarker({location:{lat: <?php echo $document3['latitude']; ?>, lng: <?php echo $document3['longitude']; ?> }, content: "Type : <?php echo $document3['Type']; ?>" + "<br>Pratique : <?php echo $document3['Pratique']; ?>" });
+            //je mets en commentaire la version preccedente des marqueurs.
+            /*addMarker({location:{lat: <?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> }, content: "Type : <?php echo $document['Type']; ?>" + "<br>Pratique : <?php echo $document['Pratique']; ?>" });
+            addMarker({location:{lat: <?php echo $document2['latitude']; ?>, lng: <?php echo $document2['longitude']; ?> }, content: "Type : <?php echo $document2['Type']; ?>" + "<br>Pratique : <?php echo $document2['Pratique']; ?>" });
+            addMarker({location:{lat: <?php echo $document3['latitude']; ?>, lng: <?php echo $document3['longitude']; ?> }, content: "Type : <?php echo $document3['Type']; ?>" + "<br>Pratique : <?php echo $document3['Pratique']; ?>" });
+            */
         }
 
        </script>
