@@ -7,10 +7,10 @@ $app = new \Slim\App;
 
 
 
-// get all customers
+// sélectionner tous les terrains
 
 $app->get('/api/terrains', function(Request $request, Response $response){
-
+try {
     $client = new MongoDB\Client('mongodb+srv://anas-admin:anas1998@cluster0.qyzeh.mongodb.net/testdb');
 
     $terraindb = $client->terraindb;
@@ -24,7 +24,18 @@ $document = $terrains->find(
 foreach($document as $doc) 
 {
     echo json_encode($doc);
-    echo "</br>";
+}
+}
+
+catch (MongoDB\Driver\Exception\AuthenticationException $e) {
+
+    echo "Exception:", $e->getMessage(), "\n";
+} catch (MongoDB\Driver\Exception\ConnectionException $e) {
+
+    echo "Exception:", $e->getMessage(), "\n";
+} catch (MongoDB\Driver\Exception\ConnectionTimeoutException $e) {
+
+    echo "Exception:", $e->getMessage(), "\n";
 }
 
 
@@ -33,7 +44,7 @@ foreach($document as $doc)
 
 //sélectionner un terrain
 $app->get('/api/terrain/{id}', function(Request $request, Response $response){
-
+	
 	$id = $request->getAttribute('id'); 
 	$id1 = (int)$id;
 
@@ -50,7 +61,9 @@ $document = $terrains->findOne(
 ); 
 
 if(empty($document) == true) {
-	echo "terrain inexistant";
+	$data['error'] = 'terrain inexistant';
+return $response->withJson($data, 404);
+
 } else {
 	echo json_encode($document);
 }
@@ -74,33 +87,41 @@ catch (MongoDB\Driver\Exception\AuthenticationException $e) {
 
 //ajouter terrain - Tolerant Reader 
 
-$app->post('/api/terrain/add', function(Request $request, Response $response){
+$app->post('/api/newterrain', function(Request $request, Response $response){
 	$headers = $request->getHeader('Content-Type');
-	if ($headers[0] == "application/xml") {   //Traitement si body au format xml
-		$data = $request->getBody();
-        $terrainsss = new SimpleXMLElement($data);
+	if ($headers[0] == "application/xml") {
 
-		$id = $terrainsss->id;
 		
-		$id1 = (int)$id;   // Caster toutes les variables pour pouvoir les exploiter
-		
+	  $data = $request->getBody();
+      $terrainsss = new SimpleXMLElement($data);
+	
 
-		$longitude = $terrainsss->longitude;
+       
+		$id = $terrainsss[0]->id;
+	     $id1 = (int)$id;
+		
+		
+        
+		
+		$longitude = $terrainsss[0]->longitude;
+		
 		$long = (float)$longitude;
+
 		
 
-		$latitude = $terrainsss->latitude;
+		$latitude = $terrainsss[0]->latitude;
 		$lat = (float)$latitude;
-
-		$type = $terrainsss->Type;
-		$ty = (string)$type;
-		$adresse=$terrainsss->Adresse;
-		$addr = (string)$adresse;
-		$pratique=$terrainsss->Pratique;
-		$prat=(string)$pratique;
-		$libre=$terrainsss->libre;
 		
-		if (strtolower($libre) == 'true') {  //la variable libre contient un booléan, mais pas au sens de php. Il faut réaffecter la variable en fonction de la valeur envoyer.
+
+		$type = $terrainsss[0]->Type;
+		$ty = (string)$type;
+		$adresse=$terrainsss[0]->Adresse;
+		$addr = (string)$adresse;
+		$pratique=$terrainsss[0]->Pratique;
+		$prat=(string)$pratique;
+		$libre=$terrainsss[0]->libre;
+		
+		if (strtolower($libre) == 'true') {
 	        $lib = true;
 		}
 		if (strtolower($libre) == 'false') {
@@ -108,20 +129,18 @@ $app->post('/api/terrain/add', function(Request $request, Response $response){
 		}
 		if (strtolower($libre) != 'false' && strtolower($libre) != 'true' ) {
 			$lib = null;
+		
 		}
+		
+    
+		
 		
 		
 		if(empty($id1) == true || empty($long) ==true || empty($lat) ==true || empty($ty) ==true || empty($addr) == true || empty($prat) ==true || is_null($lib) ==true )	{
-			echo "<p>Vous devez renseigner le header dans son ensemble<br>
-			       <id></id><br>
-				   <longitude></longitude><br>
-				   <latitude></latitude><br>
-				   <Type></Type><br>
-				   <Adresse></Adresse><br>
-				   <Pratique></Pratique><br>
-				   <libre></libre></p>";
+			$data1['error'] = 'Vous devez renseigner le body dans son ensemble';
+            return $response->withJson($data1, 400);
 		}
-
+  
 	else {	
 		try {
 
@@ -135,7 +154,8 @@ $document = $terrains->findOne(
 ); 
 
 if(empty($document)==false) {
-	echo "ce terrain existe déjà";
+	$data2['error'] = 'Un terrain avec cet id existe deja';
+            return $response->withJson($data2, 400);
 }
 
 else {
@@ -143,19 +163,19 @@ else {
 	$insert = array (
 
 		'_id' => $id1,
-		'longitude' => $long1,
-		'latitude' => $latitude,
-		'Type' => $type,
+		'longitude' => $long,
+		'latitude' => $lat,
+		'Type' => $ty,
 		'Adresse' => $addr,
-		'Pratique' => $pratique,
-		'Libre d\'accès' => $libre
+		'Pratique' => $prat,
+		'Libre d\'accès' => $lib
 		
 		);
 
 		$terrains->insertOne($insert);
 
-echo"Terrain bien inséré"; 
-
+		$data3['success'] = 'Terrain bien ajoute';
+		return $response->withJson($data3, 201);
 }
 	}
 
@@ -172,7 +192,7 @@ echo"Terrain bien inséré";
 
 
 	
-	}
+	} 
 	
 }
 
@@ -198,14 +218,8 @@ if ($headers[0] == "application/json")
 	$id1 = (int)$id;
 
 if(empty($id) == true || empty($longitude) ==true || empty($latitude) ==true || empty($Type) ==true || empty($Adresse) == true || empty($Pratique) ==true || empty($Libre) ==true )	{
-	echo "Vous devez renseigner le header dans son ensemble
-	{'id' :
-	 'longitude' :
-     'latitude':
-	 'Type':
-	 'Adresse':
-	 'Pratique':
-	 'Libre d'accès':}";
+	$data['error'] = 'Vous devez renseigner le body dans son ensemble';
+            return $response->withJson($data, 400);
 }
 
 else {	
@@ -221,7 +235,8 @@ $document = $terrains->findOne(
 ); 
 
 if(empty($document)==false) {
-	echo "ce terrain existe déjà";
+	$data1['error'] = 'Un terrain avec cet id existe deja';
+            return $response->withJson($data1, 400);
 }
 
 else {
@@ -240,7 +255,8 @@ $insert = array (
 
 $terrains->insertOne($insert);
 
-echo"Terrain bien inséré";  }}
+$data2['success'] = 'Terrain bien ajoute';
+return $response->withJson($data2, 201); }}
 
 catch (MongoDB\Driver\Exception\AuthenticationException $e) {
 
@@ -262,13 +278,70 @@ catch (MongoDB\Driver\Exception\AuthenticationException $e) {
 
 $app->put('/api/terrain/update/{id}', function(Request $request, Response $response){
 
+
+	$headers = $request->getHeader('Content-Type');
 	$id = $request->getAttribute('id'); 
 	$id1 = (int)$id;
+	if ($headers[0] == "application/xml") {
+        $dataxml = $request->getBody();
+      $terraintype = new SimpleXMLElement($dataxml);
+	
+       
+		$type = $terraintype[0]->type;
+		
+		
+if(empty($type) == true)	{
+	$data['error'] = 'Vous devez renseigner le nouveau type du terrain';
+            return $response->withJson($data, 400);
+}
+else {
+	try {
+		$client = new MongoDB\Client('mongodb+srv://anas-admin:anas1998@cluster0.qyzeh.mongodb.net/testdb');
+	
+		$terraindb = $client->terraindb;
+	$terrains = $terraindb->terrains;
+	
+	$document = $terrains->findOne(
+		['_id' => $id1]
+	); 
+	
+	if(empty($document)==true) {
+		$data1['error'] = 'Terrain inexistant';
+				return $response->withJson($data1, 400);
+	}
+	
+	else {
+	
+	$update = $terrains->updateOne(
+	   ['_id' => $id1],
+	   ['$set' => ['Type' => $type]]
+	
+	);
+	
+	$data2['success'] = 'Type de terrain bien modifié';
+        return $response->withJson($data2, 200); }}
+	
+	catch (MongoDB\Driver\Exception\AuthenticationException $e) {
+	
+		echo "Exception:", $e->getMessage(), "\n";
+	} catch (MongoDB\Driver\Exception\ConnectionException $e) {
+	
+		echo "Exception:", $e->getMessage(), "\n";
+	} catch (MongoDB\Driver\Exception\ConnectionTimeoutException $e) {
+	
+		echo "Exception:", $e->getMessage(), "\n";
+	}
+}
+	}
+
+	if ($headers[0] == "application/json") {
+	
 	$Type = $request->getParam('Type'); 
 	
 
 if(empty($Type) ==true)	{
-	echo "Vous devez renseigner le nouveau type du terrain";
+	$data['error'] = 'Vous devez renseigner le nouveau type du terrain';
+            return $response->withJson($data, 400);
 }
 
 else {	
@@ -284,7 +357,8 @@ $document = $terrains->findOne(
 ); 
 
 if(empty($document)==true) {
-	echo "ce terrain n'existe pas";
+	$data1['error'] = 'Terrain inexistant';
+            return $response->withJson($data1, 400);
 }
 
 else {
@@ -295,7 +369,8 @@ $update = $terrains->updateOne(
 
 );
 
-echo"Terrain bien modifié";  }}
+$data2['success'] = 'Type de terrain bien modifié';
+        return $response->withJson($data2, 200);  }}
 
 catch (MongoDB\Driver\Exception\AuthenticationException $e) {
 
@@ -309,6 +384,7 @@ catch (MongoDB\Driver\Exception\AuthenticationException $e) {
 }
 	
 } 
+	}
 });
 
 //supprimer un terrain
@@ -334,12 +410,15 @@ $document = $terrains->findOne(
 ); 
 
 if(empty($document) == true) {
-	echo "terrain inexistant";
+	$data1['error'] = 'Terrain inexistant';
+            return $response->withJson($data1, 400);
+}
 } else {
 	$document = $terrains->deleteOne(
 		['_id' => $id1]
 	);
-	echo "bien supprimé";
+	$data2['success'] = 'Terrain bien supprime';
+        return $response->withJson($data2, 200);
 }
 
  }
