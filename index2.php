@@ -1,4 +1,4 @@
-<?php 
+<?php
 require 'vendor/autoload.php';
 
 $client = new MongoDB\Client('mongodb+srv://yvan_lo10:yvanlo10@cluster0.qyzeh.mongodb.net/testdb');
@@ -11,7 +11,7 @@ $document = $terrains->findOne(
 );
 
 $document2 = $terrains->findOne(
-    ['_id' => 2]
+     ['_id' => 2]
 );
 
 $document3 = $terrains->findOne(
@@ -45,6 +45,10 @@ $document3 = $terrains->findOne(
         <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link href="css/styles.css" rel="stylesheet" />
+        <link rel="stylesheet" href="css/calendar_app.css"/>
+        <link rel="stylesheet" href="css/external.css"/>
+
+
 
         <style type="text/css">
             #map{ /* la carte DOIT avoir une hauteur sinon elle n'apparaît pas */
@@ -109,40 +113,40 @@ $document3 = $terrains->findOne(
         <script>
         let map;
         function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat:<?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> },
-                zoom: 12,
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat:<?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> },
+            zoom: 12,
+        });
+
+        function addMarker(porperty) {
+
+            const marker = new google.maps.Marker({
+            position:porperty.location,
+            map:map,
             });
 
-            function addMarker(porperty) {
+            const detailwindow = new google.maps.InfoWindow({
+            content : porperty.content
+            });
 
-                const marker = new google.maps.Marker({
-                position:porperty.location,
-                map:map,
-                });
+            marker.addListener("click", ()=>{
+            detailwindow.open(map, marker);
+            })
+        }
 
-                const detailwindow = new google.maps.InfoWindow({
-                content : porperty.content
-                });
-                
-                marker.addListener("click", ()=>{
-                detailwindow.open(map, marker);
-                })
-            }
-
-            <?php 
+        <?php
             $nombre_document = $terrains->count();
             $liste_document = array();
             $meteo = ""; // ceci est à completer dès que la donnée sera disponible
 
             // je crée un tableau qui stocke tous nos documents
-            for ($i=0; $i < $nombre_document ; $i++ ) {        
+            for ($i=0; $i < $nombre_document ; $i++ ) {
                 $liste_document[] =  $terrains->findOne(['_id' => ($i+1)]);
             }
 
             // j'affiche les marqueurs de terrain sur la carte en fonction de la météo
             if($meteo == "pluie"){
-                for ($i=0; $i < $nombre_document; $i++) { 
+                for ($i=0; $i < $nombre_document; $i++) {
                     if($liste_document[$i]['Type'] == "Synthétique"){  ?>
                         addMarker({location:{lat: <?php echo $liste_document[$i]['latitude']; ?>, lng: <?php echo $liste_document[$i]['longitude']; ?> }, content: "Type : <?php echo $liste_document[$i]['Type']; ?>" + "<br>Pratique : <?php echo $liste_document[$i]['Pratique']; ?>" });                   
                         <?php  }
@@ -152,7 +156,7 @@ $document3 = $terrains->findOne(
                         addMarker({location:{lat: <?php echo $liste_document[$i]['latitude']; ?>, lng: <?php echo $liste_document[$i]['longitude']; ?> }, content: "Type : <?php echo $liste_document[$i]['Type']; ?>" + "<br>Pratique : <?php echo $liste_document[$i]['Pratique']; ?>" });                   
                     <?php }
             }?>
-            
+
             //je mets en commentaire la version preccedente des marqueurs.
             /*addMarker({location:{lat: <?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> }, content: "Type : <?php echo $document['Type']; ?>" + "<br>Pratique : <?php echo $document['Pratique']; ?>" });
             addMarker({location:{lat: <?php echo $document2['latitude']; ?>, lng: <?php echo $document2['longitude']; ?> }, content: "Type : <?php echo $document2['Type']; ?>" + "<br>Pratique : <?php echo $document2['Pratique']; ?>" });
@@ -169,7 +173,7 @@ $document3 = $terrains->findOne(
      
 
         <!-- About Section-->
-        <section class="page-section bg-primary text-white mb-0" id="about">
+        <section class="page-section bg-primary text-white mb-0" id="about" style="height: 1100px;">
             <div class="container">
                 <!-- About Section Heading-->
                 <h2 class="page-section-heading text-center text-uppercase text-white">Réservation</h2>
@@ -180,7 +184,126 @@ $document3 = $terrains->findOne(
                     <div class="divider-custom-line"></div>
                 </div>
                 <!-- About Section Content-->
-                
+
+
+                <div class="calendar-container">
+                    <h1 class="year">&mdash; 2021 &mdash;</h1>
+                    <h2 class="description">Réservez un terrain ici *</h2>
+                    <ul>
+                        <?php
+                            $months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+                            $days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+                            foreach($months as $number => $month){
+                                ?>
+
+                                <li>
+                                    <article tabindex="0">
+                                        <div class="outline"></div>
+                                        <div class="dismiss"></div>
+                                        <div class="binding"></div>
+
+                                        <?php
+                                        echo "<h1 id=\"$number\">$month</h1>";
+                                        ?>
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                <th>Lun</th>
+                                                <th>Mar</th>
+                                                <th>Mer</th>
+                                                <th>Jeu</th>
+                                                <th>Ven</th>
+                                                <th>Sam</th>
+                                                <th>Dim</th>
+                                                </tr>
+                                            </thead>
+                                        <?php
+                                            $firstline = true;
+                                            $tr = 1;
+                                            for($i=1; $i <=31; $i++){
+                                                $isHoliday = rand(0, 30);
+                                                echo ($tr == 1 ? "<tr>" : "") . "<td class=\"". ($isHoliday == 10 ? "is-holiday" : "") ."\"><div class=\"day\">$i</div>" . ($isHoliday == 10 ? "<div class=\"holiday\">C'est les vacances !!!</div>" : "") . "</td>" . ($tr == 7 ? "</tr>" : "");
+                                                $tr = $tr == 7 ? 1 : $tr+1;
+
+                                            }
+                                        ?>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        </table>
+                                    </article>
+                                    </li>
+
+                                <?php
+                            }
+                        ?>
+                    </ul>
+                    <div class="notes">
+                        * Autorisez le service Google Calendar lors de votre réservation.
+                    </div>
+
+
+                    <div id="reservations">
+                            <h4 id="reservation-title">Réservation pour le </h4>
+                            <form action="api/quickstart.php" method="post">
+                                <label for="terrains">Choisissez un terrain</label>
+                                <select name="terrains" id="terrains">
+                                    <option value="terrain1">Terrain 1</option>
+                                    <option value="terrain2">Terrain 2</option>
+                                    <option value="terrain3">Terrain 3</option>
+                                    <option value="terrain4">Terrain 4</option>
+                                </select>
+
+                                <h5>Choisissez un créneau horaire</h5>
+                                <label for="start">Début</label>
+                                <select name="start" id="start">
+                                    <option value="8">08:00</option>
+                                    <option value="9">09:00</option>
+                                    <option value="10">10:00</option>
+                                    <option value="11">11:00</option>
+                                    <option value="12">12:00</option>
+                                    <option value="13">13:00</option>
+                                    <option value="14">14:00</option>
+                                    <option value="15">15:00</option>
+                                    <option value="16">16:00</option>
+                                    <option value="17">17:00</option>
+                                    <option value="18">18:00</option>
+                                    <option value="19">19:00</option>
+                                </select>
+
+
+                                <label for="end">Fin</label>
+                                <select name="end" id="end">
+                                    <option value="8">08:00</option>
+                                    <option value="9">09:00</option>
+                                    <option value="10">10:00</option>
+                                    <option value="11">11:00</option>
+                                    <option value="12">12:00</option>
+                                    <option value="13">13:00</option>
+                                    <option value="14">14:00</option>
+                                    <option value="15">15:00</option>
+                                    <option value="16">16:00</option>
+                                    <option value="17">17:00</option>
+                                    <option value="18">18:00</option>
+                                    <option value="19">19:00</option>
+                                </select>
+
+                                <input hidden type="text" id="reservationMonth" name="month" value="0">
+                                <input hidden type="text" id="reservationDay" name="day" value="0">
+                                <br />
+                                <button type="submit"> Réserver !</button>
+                            </form>
+                    </div>
+
+                </div>
+
+
+
+
+
+
             </div>
         </section>
         <!-- Contact Section-->
@@ -218,7 +341,7 @@ $document3 = $terrains->findOne(
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange
           }
-          
+
         });
       }
 
@@ -508,5 +631,7 @@ $document3 = $terrains->findOne(
         <script src="assets/mail/contact_me.js"></script>
         <!-- Core theme JS-->
         <script src="js/scripts.js"></script>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/calendar_app.js"></script>
     </body>
 </html>
