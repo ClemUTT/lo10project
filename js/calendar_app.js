@@ -10,7 +10,7 @@ function activate(e) {
       .addClass('active')
       .siblings().addClass('inactive');
   }
-  
+
   function dismiss(e) {
 
     if($(e.currentTarget).hasClass("dismiss")){
@@ -41,7 +41,7 @@ function activate(e) {
       activate(e);
     }
   }
-  
+
   $('article').on({
     'click': activate,
     'blur': dismiss,
@@ -53,8 +53,10 @@ function activate(e) {
 $('.calendar-container td').on('click', function(){
 
     let $li = $(this).closest("li");
+    let isReserved = $(this).hasClass('is-reserved') ? true : false;
 
     if($li.hasClass("active")){
+
 
       console.log("jour jour");
       $reservationForm.show();

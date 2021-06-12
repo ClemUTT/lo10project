@@ -5,6 +5,7 @@ $client = new MongoDB\Client('mongodb+srv://yvan_lo10:yvanlo10@cluster0.qyzeh.mo
 
 $terraindb = $client->terraindb;
 $terrains = $terraindb->terrains;
+$allTerrains = $terrains->find(['Libre d\'accès' => true]);
 
 $document = $terrains->findOne(
     ['_id' => 1]
@@ -16,7 +17,48 @@ $document2 = $terrains->findOne(
 
 $document3 = $terrains->findOne(
     ['_id' => 3]
-)
+);
+
+
+/********** Récupération des réservations **********/
+
+$reservations = $terraindb->reservation;
+$allReservations = $reservations->find(['Accepted' => true]);
+
+
+$newReservations = [];
+foreach($allReservations as $rr){
+    $id = 0;
+    foreach($rr as $key => $value){
+        if($key == '_id'){
+            $newReservations[$value] = [];
+            $id = $value;
+        } else {
+            $newReservations[$id][$key] = $value;
+        }
+    }
+}
+
+
+$newTerrains = [];
+foreach($allTerrains as $tt){
+    $id = 0;
+    foreach($tt as $key => $value){
+        if($key == '_id'){
+            $newTerrains[$value] = [];
+            $id = $value;
+        } else {
+            $newTerrains[$id][$key] = $value;
+        }
+    }
+}
+
+
+function dump($txt){
+    echo '<pre><br><br><br><br><br><br><br><br><br><br><br>';
+    print_r($txt);
+    echo '</pre>';
+}
 
 ?>
 
@@ -68,7 +110,7 @@ $document3 = $terrains->findOne(
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#carte">Carte</a></li>
-              
+
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#about">Réservation</a></li>
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#contact">Vidéo</a></li>
                     </ul>
@@ -76,7 +118,7 @@ $document3 = $terrains->findOne(
             </div>
         </nav>
 
-        
+
         <!-- Masthead-->
         <header class="masthead bg-primary text-white text-center">
             <div class="container d-flex align-items-center flex-column">
@@ -109,7 +151,7 @@ $document3 = $terrains->findOne(
                 </div>
                    <!-- Fichiers Javascript -->
         <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw==" crossorigin=""></script>
-        
+
         <script>
         let map;
         function initMap() {
@@ -168,9 +210,9 @@ $document3 = $terrains->findOne(
         <script
        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCamyOsko-YreKmCaQe4YAg1Swcy1XGnmA&callback=initMap&libraries=places&v=weekly"
        async
-       ></script>         
+       ></script>
       </section>
-     
+
 
         <!-- About Section-->
         <section class="page-section bg-primary text-white mb-0" id="about" style="height: 1100px;">
@@ -221,8 +263,31 @@ $document3 = $terrains->findOne(
                                             $firstline = true;
                                             $tr = 1;
                                             for($i=1; $i <=31; $i++){
-                                                $isHoliday = rand(0, 30);
-                                                echo ($tr == 1 ? "<tr>" : "") . "<td class=\"". ($isHoliday == 10 ? "is-holiday" : "") ."\"><div class=\"day\">$i</div>" . ($isHoliday == 10 ? "<div class=\"holiday\">C'est les vacances !!!</div>" : "") . "</td>" . ($tr == 7 ? "</tr>" : "");
+                                                $isReserved = false;
+                                                $nom = "";
+                                                $hours = "";
+                                                foreach($newReservations as $r_id => $r_value){
+                                                    $monthRes = date('m', $r_value["start"]);
+                                                    $dayRes = date('d', $r_value["start"]);
+
+
+
+                                                    if($number == $monthRes-1 && $i == $dayRes){
+                                                        foreach($newTerrains as $t_id => $t_value){
+                                                            if($t_id == $r_value["terrain_id"]){
+                                                                $nom = '[' . $t_value["Type"] . '] ' . $t_value["Adresse"];
+                                                            }
+                                                        }
+
+                                                        $startHour = date('h', $r_value["start"]) + 1;
+                                                        $endHour = date('h', $r_value["end"]) + 1;
+                                                        $hours = $startHour . ':00h - ' . $endHour . 'h:00';
+                                                        $isReserved = true;
+                                                    }
+
+                                                }
+
+                                                echo ($tr == 1 ? "<tr>" : "") . "<td class=\"". ($isReserved ? "is-reserved" : "") ."\"><div class=\"day\">$i</div>" . ($isReserved ? "<div class=\"holiday\">Réservation (". $hours .")</div>" : "") . "</td>" . ($tr == 7 ? "</tr>" : "");
                                                 $tr = $tr == 7 ? 1 : $tr+1;
 
                                             }
@@ -247,53 +312,72 @@ $document3 = $terrains->findOne(
 
                     <div id="reservations">
                             <h4 id="reservation-title">Réservation pour le </h4>
+                            <hr/>
                             <form action="api/quickstart.php" method="post">
-                                <label for="terrains">Choisissez un terrain</label>
-                                <select name="terrains" id="terrains">
-                                    <option value="terrain1">Terrain 1</option>
-                                    <option value="terrain2">Terrain 2</option>
-                                    <option value="terrain3">Terrain 3</option>
-                                    <option value="terrain4">Terrain 4</option>
+                                <label for="terrain">Choisissez un terrain</label>
+                                <select name="terrain[]" id="terrain">
+                                    <?php
+                                        foreach($newTerrains as $id => $value){
+                                            $nom = '[' . $value['Type'] . '] ' . $value['Adresse'];
+
+                                            $value = '{"id":"'. $id .'","name":"'. $nom .'"}';
+                                            echo "<option value='". '{"id":"'. $id .'","name":"'. $nom .'"}' ."'>". $nom ."</option>";
+                                        }
+                                    ?>
                                 </select>
 
-                                <h5>Choisissez un créneau horaire</h5>
-                                <label for="start">Début</label>
-                                <select name="start" id="start">
-                                    <option value="8">08:00</option>
-                                    <option value="9">09:00</option>
-                                    <option value="10">10:00</option>
-                                    <option value="11">11:00</option>
-                                    <option value="12">12:00</option>
-                                    <option value="13">13:00</option>
-                                    <option value="14">14:00</option>
-                                    <option value="15">15:00</option>
-                                    <option value="16">16:00</option>
-                                    <option value="17">17:00</option>
-                                    <option value="18">18:00</option>
-                                    <option value="19">19:00</option>
-                                </select>
+                                <br/>
+                                <br/>
+                                <br/>
+
+                                <div id="hoursDiv1">
+                                    <label for="start">Début</label>
+                                    <select name="start" id="start">
+                                        <option value="8">08:00</option>
+                                        <option value="9">09:00</option>
+                                        <option value="10">10:00</option>
+                                        <option value="11">11:00</option>
+                                        <option value="12">12:00</option>
+                                        <option value="13">13:00</option>
+                                        <option value="14">14:00</option>
+                                        <option value="15">15:00</option>
+                                        <option value="16">16:00</option>
+                                        <option value="17">17:00</option>
+                                        <option value="18">18:00</option>
+                                        <option value="19">19:00</option>
+                                    </select>
+
+                                    </div>
+                                    <br/>
+                                    <div id="hoursDiv2">
 
 
-                                <label for="end">Fin</label>
-                                <select name="end" id="end">
-                                    <option value="8">08:00</option>
-                                    <option value="9">09:00</option>
-                                    <option value="10">10:00</option>
-                                    <option value="11">11:00</option>
-                                    <option value="12">12:00</option>
-                                    <option value="13">13:00</option>
-                                    <option value="14">14:00</option>
-                                    <option value="15">15:00</option>
-                                    <option value="16">16:00</option>
-                                    <option value="17">17:00</option>
-                                    <option value="18">18:00</option>
-                                    <option value="19">19:00</option>
-                                </select>
+                                    <label for="end">Fin</label>
+                                    <select name="end" id="end">
+                                        <option value="8">08:00</option>
+                                        <option value="9">09:00</option>
+                                        <option value="10">10:00</option>
+                                        <option value="11">11:00</option>
+                                        <option value="12">12:00</option>
+                                        <option value="13">13:00</option>
+                                        <option value="14">14:00</option>
+                                        <option value="15">15:00</option>
+                                        <option value="16">16:00</option>
+                                        <option value="17">17:00</option>
+                                        <option value="18">18:00</option>
+                                        <option value="19">19:00</option>
+                                    </select>
+
+                                </div>
 
                                 <input hidden type="text" id="reservationMonth" name="month" value="0">
                                 <input hidden type="text" id="reservationDay" name="day" value="0">
-                                <br />
-                                <button type="submit"> Réserver !</button>
+
+
+                                <br/>
+                                <br/>
+
+                                <button id="reserved" class="nav-link py-2 px-0 px-lg-3 rounded" type="submit"> Réserver !</button>
                             </form>
                     </div>
 
@@ -356,7 +440,7 @@ $document3 = $terrains->findOne(
       var done = false;
       function onPlayerStateChange(event) {
         if (event.data == YT.PlayerState.PLAYING && !done) {
-          
+
           done = true;
         }
       }
@@ -367,12 +451,8 @@ $document3 = $terrains->findOne(
     </div>
 
     <div class="divider-custom">
-                    
     <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Entrainement</h2>
-                    
                 </div>
-    
-    
             </div>
         </section>
         <!-- Footer-->

@@ -1,5 +1,7 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
+
 
 /*
 if (php_sapi_name() != 'cli') {
@@ -24,6 +26,7 @@ function getClient()
     // The file token.json stores the user's access and refresh tokens, and is
     // created automatically when the authorization flow completes for the first
     // time.
+
     $tokenPath = 'token.json';
     if (file_exists($tokenPath)) {
         $accessToken = json_decode(file_get_contents($tokenPath), true);
@@ -76,39 +79,69 @@ $optParams = array(
 $results = $service->events->listEvents($calendarId, $optParams);
 $events = $results->getItems();
 
+if (empty($events)) {
+  print "No upcoming events found.\n";
+} else {
+  print "Upcoming events:\n";
+  foreach ($events as $event) {
+      $start = $event->start->dateTime;
+      if (empty($start)) {
+          $start = $event->start->date;
+      }
+      printf("%s (%s)\n", $event->getSummary(), $start);
+  }
+}
 
 
 
+/**********Insertion de la réservation en BDD***********/
 
-// Refer to the PHP quickstart on how to setup the environment:
-// https://developers.google.com/calendar/quickstart/php
-// Change the scope to Google_Service_Calendar::CALENDAR and delete any stored
-// credentials.
+$client = new MongoDB\Client('mongodb+srv://yvan_lo10:yvanlo10@cluster0.qyzeh.mongodb.net/testdb');
 
-echo "<pre>";
-var_dump($_POST);
-echo "</pre>";
+$terraindb = $client->terraindb;
+$reservations = $terraindb->reservation;
 
-$month = $_POST["month"];
+
+$month = $_POST["month"] + 1;
 $day = $_POST["day"];
-$terrains = $_POST["terrains"];
-$start = $_POST["start"];
-$end = $_POST["end"];
+$t = json_decode($_POST["terrain"][0], true);
+$start = $_POST["start"] - 1;
+$end = $_POST["end"] - 1;
+
+
+$insertReservation = $reservations->insertOne(
+  [
+    '_id' => rand(1, 10000),
+    'terrain_id' => (int) $t['id'],
+    'start' => mktime($start, 0, 0, $month, $day, 2021),
+    'end' => mktime($end, 0, 0, $month, $day, 2021),
+    'Accepted' => true
+  ]
+);
+
+
+
+
+
+
+
+/***********Insertion de la réservation dans son Agenda Google***********/
+
 
 $event = new Google_Service_Calendar_Event(array(
-  'summary' => 'Test 2021',
+  'summary' => 'Réservation',
   'location' => '800 Howard St., San Francisco, CA 94103',
-  'description' => 'A chance to hear more about Google\'s developer products.',
+  'description' => 'Réservation de match au terrain ' . $terrain . "coucou",
   'start' => array(
-    'dateTime' => '2021-'. $month .'-'. $day .'T09:00:00-'. $start .':00',
-    'timeZone' => 'America/Los_Angeles',
+    'dateTime' => "2021-". $month ."-".$day."T".$start.":00:00-00:00",
+    'timeZone' => 'Europe/Paris',
   ),
   'end' => array(
-    'dateTime' => '2021-'. $month .'-'. $day .'T17:00:00-'. $end .':00',
-    'timeZone' => 'America/Los_Angeles',
+    'dateTime' => "2021-". $month ."-".$day."T".$end.":00:00-00:00",
+    'timeZone' => 'Europe/Paris',
   ),
   'recurrence' => array(
-    'RRULE:FREQ=DAILY;COUNT=2'
+    'RRULE:FREQ=DAILY;COUNT=1'
   ),
   'attendees' => array(
     array('email' => 'lpage@example.com'),
@@ -125,21 +158,13 @@ $event = new Google_Service_Calendar_Event(array(
 
 $calendarId = 'primary';
 $event = $service->events->insert($calendarId, $event);
-printf('Event created: %s\n', $event->htmlLink);
+// printf('Event created: %s<br/>', $event->htmlLink);
 
 
 
 
+/*********** Retour à la page d'accueil ***********/
 
-if (empty($events)) {
-    print "No upcoming events found.\n";
-} else {
-    print "Upcoming events:\n";
-    foreach ($events as $event) {
-        $start = $event->start->dateTime;
-        if (empty($start)) {
-            $start = $event->start->date;
-        }
-        printf("%s (%s)\n", $event->getSummary(), $start);
-    }
-}
+header('Location: http://localhost/lo10project/index2.php');
+
+?>

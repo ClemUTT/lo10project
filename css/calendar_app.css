@@ -195,7 +195,7 @@ a {
   background-color: transparent;
 }
 
-.calendar-container .is-holiday {
+.calendar-container .is-reserved {
   color: #fff;
   background-color: #548383;
 }
@@ -278,11 +278,25 @@ a {
 .calendar-container #reservations{
   position: absolute;
   height: 500px;
-  width: 400px;
+  width: 450px;
+  padding: 25px;
   left: 810px;
   bottom: 50px;
   background-color: white;
   border-radius: 5px;
 
   display: none;
+}
+
+#hoursDiv1, #hoursDiv2{
+  width: 35%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#reserved{
+  color: white;
+  background-color: #1abc9c;
+  border: none;
 }
