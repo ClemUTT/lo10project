@@ -1,4 +1,7 @@
 <?php 
+
+session_start();
+
 require 'vendor/autoload.php';
 require 'functions.php';
 
@@ -116,15 +119,16 @@ foreach($allTerrains as $tt){
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#carte">Carte</a></li>
-              
+
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#about">Réservation</a></li>
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#contact">Vidéo</a></li>
+                        <li class="nav-item mx-0 mx-lg-1" style="font-size: 0.8rem;"><?php echo (isset(getUserInfo()['email'])) ? '<a href="/lo10project/api/calendarHandler.php?deconnexion=true" style="color: tomato;">Déconnexion</a><br/><span style="font-size:0.5rem;">(' . getUserInfo()['email'] .')</span>' : '<a href="/lo10project/api/calendarHandler.php" style="color: green;margin-top:15%;display:block">Connexion</a>' ?></li>
                     </ul>
                 </div>
             </div>
         </nav>
 
-        
+
         <!-- Masthead-->
         <header class="masthead bg-primary text-white text-center">
             <div class="container d-flex align-items-center flex-column">

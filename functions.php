@@ -28,5 +28,38 @@ function mongoToArray($mongoObjs){
     return $newObjs;
 }
 
+function getUserInfo(){
+
+    if(!isset($_SESSION['calendar_token'])){
+        return;
+    }
+
+    $ch_userinfo = curl_init();
+    $headers = [
+        'Authorization: Bearer ' . $_SESSION['calendar_token']['access_token']
+    ];
+    curl_setopt($ch_userinfo, CURLOPT_URL, 'https://openidconnect.googleapis.com/v1/userinfo');
+    curl_setopt($ch_userinfo, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_setopt($ch_userinfo, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch_userinfo, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch_userinfo, CURLOPT_RETURNTRANSFER, true);
+
+    return json_decode(curl_exec($ch_userinfo), true);
+
+}
+
+function getOpenIDConfiguration(){
+
+    $ch_get = curl_init();
+
+    curl_setopt($ch_get, CURLOPT_URL, 'https://accounts.google.com/.well-known/openid-configuration');
+    curl_setopt($ch_get, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_setopt($ch_get, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch_get, CURLOPT_RETURNTRANSFER, true);
+
+    return json_decode(curl_exec($ch_get), true);
+
+}
+
 
 ?>

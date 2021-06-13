@@ -1,11 +1,12 @@
 <?php
 
+session_start();
+// session_destroy();
+
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../config.php';
 require __DIR__ . '/../functions.php';
-session_start();
-// session_destroy();
 
 $client = getClient();
 $service = new Google_Service_Calendar($client);
@@ -78,13 +79,24 @@ if(isset($_POST['terrain'])){
 
 
       header('Location: http://localhost/lo10project/index2.php?reservation-confirmed=true');
+      exit;
 
 
-} else {
-    header('Location: http://localhost/lo10project/index2.php?connected=true');
 }
 
+if(isset($_GET['deconnexion'])){
+    session_destroy();
+    header('Location: http://localhost/lo10project/index2.php');
+    exit;
+}
 
+if(isset(getUserInfo()['email'])){
+    header('Location: http://localhost/lo10project/index2.php?connected=true');
+    exit;
+} else {
+    header('Location: http://localhost/lo10project/index2.php?connected=false');
+    exit;
+}
 
 
 
@@ -145,8 +157,8 @@ function getClient(){
 
 
             $_SESSION['calendar_token'] = $access_token;
-            header('Location: http://localhost/lo10project/api/calendarHandler.php');
-
+            header('Location: http://localhost/lo10project/index2.php?connected=true');
+            exit;
 
         }
 
@@ -173,36 +185,11 @@ function getClient(){
 
 function goToAuthURL($auth_url){
     header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+    exit;
 }
 
 
-function getUserInfo(){
-    $ch_userinfo = curl_init();
-    $headers = [
-        'Authorization: Bearer ' . $_SESSION['calendar_token']['access_token']
-    ];
-    curl_setopt($ch_userinfo, CURLOPT_URL, 'https://openidconnect.googleapis.com/v1/userinfo');
-    curl_setopt($ch_userinfo, CURLOPT_CUSTOMREQUEST, "GET");
-    curl_setopt($ch_userinfo, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch_userinfo, CURLOPT_TIMEOUT, 30);
-    curl_setopt($ch_userinfo, CURLOPT_RETURNTRANSFER, true);
 
-    return json_decode(curl_exec($ch_userinfo), true);
-
-}
-
-function getOpenIDConfiguration(){
-
-    $ch_get = curl_init();
-
-    curl_setopt($ch_get, CURLOPT_URL, 'https://accounts.google.com/.well-known/openid-configuration');
-    curl_setopt($ch_get, CURLOPT_CUSTOMREQUEST, "GET");
-    curl_setopt($ch_get, CURLOPT_TIMEOUT, 30);
-    curl_setopt($ch_get, CURLOPT_RETURNTRANSFER, true);
-
-    return json_decode(curl_exec($ch_get), true);
-
-}
 
 // $ch_post = curl_init();
 // $params = [
