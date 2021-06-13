@@ -1,5 +1,7 @@
 <?php
 require 'vendor/autoload.php';
+require 'functions.php';
+
 
 $client = new MongoDB\Client('mongodb+srv://yvan_lo10:yvanlo10@cluster0.qyzeh.mongodb.net/testdb');
 
@@ -51,13 +53,6 @@ foreach($allTerrains as $tt){
             $newTerrains[$id][$key] = $value;
         }
     }
-}
-
-
-function dump($txt){
-    echo '<pre><br><br><br><br><br><br><br><br><br><br><br>';
-    print_r($txt);
-    echo '</pre>';
 }
 
 ?>
@@ -279,8 +274,8 @@ function dump($txt){
                                                             }
                                                         }
 
-                                                        $startHour = date('h', $r_value["start"]) + 1;
-                                                        $endHour = date('h', $r_value["end"]) + 1;
+                                                        $startHour = date('h', $r_value["start"]);
+                                                        $endHour = date('h', $r_value["end"]);
                                                         $hours = $startHour . ':00h - ' . $endHour . 'h:00';
                                                         $isReserved = true;
                                                     }
@@ -313,7 +308,7 @@ function dump($txt){
                     <div id="reservations">
                             <h4 id="reservation-title">Réservation pour le </h4>
                             <hr/>
-                            <form action="api/quickstart.php" method="post">
+                            <form action="api/calendarHandler.php" method="post">
                                 <label for="terrain">Choisissez un terrain</label>
                                 <select name="terrain[]" id="terrain">
                                     <?php
