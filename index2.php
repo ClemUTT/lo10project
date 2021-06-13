@@ -68,29 +68,6 @@ foreach($allTerrains as $tt){
 }
 
 
-function dump($txt){
-    echo '<pre><br><br><br><br><br><br><br><br><br><br><br>';
-    print_r($txt);
-    echo '</pre>';
-}
-
-   
-
-
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
 ?>
 
 
