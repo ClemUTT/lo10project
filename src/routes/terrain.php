@@ -65,7 +65,7 @@ if(empty($document) == true) {
 return $response->withJson($data, 404);
 
 } else {
-	echo json_encode($document);
+return $response->withJson($document, 200);
 }
 
  }
@@ -81,19 +81,26 @@ catch (MongoDB\Driver\Exception\AuthenticationException $e) {
     echo "Exception:", $e->getMessage(), "\n";
 }
 
-
-
 });
 
 //ajouter terrain - Tolerant Reader 
 
 $app->post('/api/newterrain', function(Request $request, Response $response){
 	$headers = $request->getHeader('Content-Type');
+	if (count($headers)==0) {
+		$data1['error'] = 'Vous devez renseigner le header et le body';
+		return $response->withJson($data1, 400);
+
+
+	}
 	if ($headers[0] == "application/xml") {
 
 		
 	  $data = $request->getBody();
+	
       $terrainsss = new SimpleXMLElement($data);
+	
+
 	
 
        
@@ -280,6 +287,14 @@ $app->put('/api/terrain/update/{id}', function(Request $request, Response $respo
 
 
 	$headers = $request->getHeader('Content-Type');
+
+	if (count($headers)==0) {
+		$data1['error'] = 'Vous devez renseigner le header et le body';
+		return $response->withJson($data1, 400);
+
+
+	}
+	
 	$id = $request->getAttribute('id'); 
 	$id1 = (int)$id;
 	if ($headers[0] == "application/xml") {
@@ -288,9 +303,10 @@ $app->put('/api/terrain/update/{id}', function(Request $request, Response $respo
 	
        
 		$type = $terraintype[0]->type;
+		$ty = (string)$type;
 		
 		
-if(empty($type) == true)	{
+if(empty($ty) == true)	{
 	$data['error'] = 'Vous devez renseigner le nouveau type du terrain';
             return $response->withJson($data, 400);
 }
@@ -314,7 +330,7 @@ else {
 	
 	$update = $terrains->updateOne(
 	   ['_id' => $id1],
-	   ['$set' => ['Type' => $type]]
+	   ['$set' => ['Type' => $ty]]
 	
 	);
 	
@@ -413,7 +429,7 @@ if(empty($document) == true) {
 	$data1['error'] = 'Terrain inexistant';
             return $response->withJson($data1, 400);
 }
-} else {
+ else {
 	$document = $terrains->deleteOne(
 		['_id' => $id1]
 	);

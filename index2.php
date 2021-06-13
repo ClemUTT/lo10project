@@ -1,28 +1,40 @@
-<?php
+<?php 
 require 'vendor/autoload.php';
 require 'functions.php';
 
 
-$client = new MongoDB\Client('mongodb+srv://yvan_lo10:yvanlo10@cluster0.qyzeh.mongodb.net/testdb');
-
-$terraindb = $client->terraindb;
-$terrains = $terraindb->terrains;
-$allTerrains = $terrains->find(['Libre d\'accès' => true]);
-
-$document = $terrains->findOne(
-    ['_id' => 1]
-);
-
-$document2 = $terrains->findOne(
-     ['_id' => 2]
-);
-
-$document3 = $terrains->findOne(
-    ['_id' => 3]
-);
 
 
-/********** Récupération des réservations **********/
+
+$client = new GuzzleHttp\Client(array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false, ), ));
+
+$client->getAsync('http://api.openweathermap.org/data/2.5/weather?q=Troyes&appid=f53f9bfb3f09f4560e8f8720d4a6685d&units=metric&lang=fr')->then(function ($response) {
+        
+     $response->getBody(); 
+    $data = json_decode($response->getBody(), true);
+
+    $temps = $data['weather'][0]['main'];
+    $temp2 = $data['main']['temp'];
+
+    $client2 = new MongoDB\Client('mongodb+srv://anas-admin:anas1998@cluster0.qyzeh.mongodb.net/testdb');
+
+    $terraindb = $client2->terraindb;
+    $terrains = $terraindb->terrains;
+    $allTerrains = $terrains->find(['Libre d\'accès' => true]);
+
+    $document = $terrains->findOne(
+        ['_id' => 1]
+    );
+    
+    $document2 = $terrains->findOne(
+        ['_id' => 2]
+    );
+    
+    $document3 = $terrains->findOne(
+        ['_id' => 3]
+    );
+
+    /********** Récupération des réservations **********/
 
 $reservations = $terraindb->reservation;
 $allReservations = $reservations->find(['Accepted' => true]);
@@ -55,6 +67,30 @@ foreach($allTerrains as $tt){
     }
 }
 
+
+function dump($txt){
+    echo '<pre><br><br><br><br><br><br><br><br><br><br><br>';
+    print_r($txt);
+    echo '</pre>';
+}
+
+   
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
 ?>
 
 
@@ -85,8 +121,6 @@ foreach($allTerrains as $tt){
         <link rel="stylesheet" href="css/calendar_app.css"/>
         <link rel="stylesheet" href="css/external.css"/>
 
-
-
         <style type="text/css">
             #map{ /* la carte DOIT avoir une hauteur sinon elle n'apparaît pas */
                 height:400px;
@@ -105,7 +139,7 @@ foreach($allTerrains as $tt){
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#carte">Carte</a></li>
-
+              
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#about">Réservation</a></li>
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#contact">Vidéo</a></li>
                     </ul>
@@ -113,7 +147,7 @@ foreach($allTerrains as $tt){
             </div>
         </nav>
 
-
+        
         <!-- Masthead-->
         <header class="masthead bg-primary text-white text-center">
             <div class="container d-flex align-items-center flex-column">
@@ -134,57 +168,59 @@ foreach($allTerrains as $tt){
         <!-- Portfolio Section-->
 
         <section class="page-section carte" id="carte">
-            <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Carte</h2>
+            <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Carte & Météo</h2>
             <div class="divider-custom">
                 <div class="divider-custom-line"></div>
                 <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
                 <div class="divider-custom-line"></div>
             </div>
+            <h4><?php echo 'Il fait ' . $temp2 . '°C. Voici les terrains que nous vous proposons en fonction de la météo:'; ?></h4>
 
-                <div id="map">""
+                <div id="map">
                     <!-- Ici s'affichera la carte -->
                 </div>
                    <!-- Fichiers Javascript -->
         <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw==" crossorigin=""></script>
-
         <script>
         let map;
         function initMap() {
-        map = new google.maps.Map(document.getElementById("map"), {
-            center: { lat:<?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> },
-            zoom: 12,
-        });
-
-        function addMarker(porperty) {
-
-            const marker = new google.maps.Marker({
-            position:porperty.location,
-            map:map,
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat:<?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> },
+                zoom: 12,
             });
 
-            const detailwindow = new google.maps.InfoWindow({
-            content : porperty.content
-            });
+            function addMarker(porperty) {
 
-            marker.addListener("click", ()=>{
-            detailwindow.open(map, marker);
-            })
-        }
+                const marker = new google.maps.Marker({
+                position:porperty.location,
+                map:map,
+                });
 
-        <?php
+                const detailwindow = new google.maps.InfoWindow({
+                content : porperty.content
+                });
+                
+                marker.addListener("click", ()=>{
+                detailwindow.open(map, marker);
+                })
+            }
+
+            <?php 
             $nombre_document = $terrains->count();
             $liste_document = array();
-            $meteo = ""; // ceci est à completer dès que la donnée sera disponible
+        
+            
+            ; // ceci est à completer dès que la donnée sera disponible
 
             // je crée un tableau qui stocke tous nos documents
-            for ($i=0; $i < $nombre_document ; $i++ ) {
+            for ($i=0; $i < $nombre_document ; $i++ ) {        
                 $liste_document[] =  $terrains->findOne(['_id' => ($i+1)]);
             }
 
             // j'affiche les marqueurs de terrain sur la carte en fonction de la météo
-            if($meteo == "pluie"){
-                for ($i=0; $i < $nombre_document; $i++) {
-                    if($liste_document[$i]['Type'] == "Synthétique"){  ?>
+            if($temp2 == "pluie"){
+                for ($i=0; $i < $nombre_document; $i++) { 
+                    if($liste_document[$i]['Type'] == "Synthetique"){  ?>
                         addMarker({location:{lat: <?php echo $liste_document[$i]['latitude']; ?>, lng: <?php echo $liste_document[$i]['longitude']; ?> }, content: "Type : <?php echo $liste_document[$i]['Type']; ?>" + "<br>Pratique : <?php echo $liste_document[$i]['Pratique']; ?>" });                   
                         <?php  }
                 }
@@ -193,7 +229,7 @@ foreach($allTerrains as $tt){
                         addMarker({location:{lat: <?php echo $liste_document[$i]['latitude']; ?>, lng: <?php echo $liste_document[$i]['longitude']; ?> }, content: "Type : <?php echo $liste_document[$i]['Type']; ?>" + "<br>Pratique : <?php echo $liste_document[$i]['Pratique']; ?>" });                   
                     <?php }
             }?>
-
+            
             //je mets en commentaire la version preccedente des marqueurs.
             /*addMarker({location:{lat: <?php echo $document['latitude']; ?>, lng: <?php echo $document['longitude']; ?> }, content: "Type : <?php echo $document['Type']; ?>" + "<br>Pratique : <?php echo $document['Pratique']; ?>" });
             addMarker({location:{lat: <?php echo $document2['latitude']; ?>, lng: <?php echo $document2['longitude']; ?> }, content: "Type : <?php echo $document2['Type']; ?>" + "<br>Pratique : <?php echo $document2['Pratique']; ?>" });
@@ -205,9 +241,13 @@ foreach($allTerrains as $tt){
         <script
        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCamyOsko-YreKmCaQe4YAg1Swcy1XGnmA&callback=initMap&libraries=places&v=weekly"
        async
-       ></script>
+       ></script> 
+
+       
+                
       </section>
 
+    
 
         <!-- About Section-->
         <section class="page-section bg-primary text-white mb-0" id="about" style="height: 1100px;">
@@ -303,7 +343,6 @@ foreach($allTerrains as $tt){
                     <div class="notes">
                         * Autorisez le service Google Calendar lors de votre réservation.
                     </div>
-
 
                     <div id="reservations">
                             <h4 id="reservation-title">Réservation pour le </h4>
@@ -416,11 +455,12 @@ foreach($allTerrains as $tt){
           height: '360',
           width: '640',
           videoId: 'x9jYSoWclPY',
+            
           events: {
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange
           }
-
+          
         });
       }
 
@@ -435,7 +475,7 @@ foreach($allTerrains as $tt){
       var done = false;
       function onPlayerStateChange(event) {
         if (event.data == YT.PlayerState.PLAYING && !done) {
-
+          
           done = true;
         }
       }
@@ -446,8 +486,139 @@ foreach($allTerrains as $tt){
     </div>
 
     <div class="divider-custom">
+                    
     <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Entrainement</h2>
+                    
                 </div>
+    
+    
+            </div>
+        </section>
+
+
+        <section class="page-section" id="contact">
+            <div class="container">
+                <!-- Contact Section Heading-->
+                <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Types de terrain</h2>
+                <!-- Icon Divider-->
+                <div class="divider-custom">
+                    <div class="divider-custom-line"></div>
+                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                    <div class="divider-custom-line"></div>
+                </div>
+        <!-- Contact Section Form-->
+        <div class = "container">
+<?php
+
+     }); 
+
+$promises = [
+    $client->getAsync('http://api.openweathermap.org/data/2.5/weather?q=Troyes&appid=f53f9bfb3f09f4560e8f8720d4a6685d&units=metric&lang=fr')->then(function ($response) {
+         $data = json_decode($response->getBody(), true);
+        }),
+
+        $client->getAsync('https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=1d7e6113ac773874aaf2758983f681eb&user_id=14253409@N00&tags=eos,pitch,hockey,6D,365,astroturf,synthetic,goals,night,adobe,canon,challenge,dark,editing&tag_mode=all&format=json&nojsoncallback=1')->then(function ($response) {
+
+             $data = json_decode($response->getBody(), true);
+             $photos= $data['photos']['photo'];
+foreach($photos as $photo) {
+    $url= 'http://farm'.$photo['farm'].'.staticflickr.com/'.$photo['server'].'/'.$photo['id'].'_'.$photo['secret'].'.jpg';
+    ?>
+<div class="container">
+  <div class="row">
+    <div class="col-sm">
+    <img src="<?php echo $url; ?>">
+    </div>
+    <div class="col-sm">
+    <h1> Terrain Synthétique</h1>
+     <h4>Pratiquable même par temps de pluie</h4>
+     <h4>Privilégier des crampons AG</h4>
+    </div>
+    </div>
+</div>
+    
+
+<?php
+  
+
+
+    
+}
+            }),
+
+            $client->getAsync('https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=1d7e6113ac773874aaf2758983f681eb&user_id=14469553@N05&tags=soccer,field&tag_mode=all&format=json&nojsoncallback=1')->then(function ($response) {
+
+                $data = json_decode($response->getBody(), true);
+                $photos= $data['photos']['photo'];
+   foreach($photos as $photo) {
+       $url1= 'http://farm'.$photo['farm'].'.staticflickr.com/'.$photo['server'].'/'.$photo['id'].'_'.$photo['secret'].'.jpg';
+       ?>
+
+
+<div class="container">
+  <div class="row">
+<div class="col-sm">
+<img src="<?php echo $url1; ?>">
+    </div>
+    <div class="col-sm">
+    <h1> Terrain en herbe</h1>
+    <h4>Privilégier des crampons FG par temps sec</h4>
+    <h4>Privilégier des crampons SG par temps de pluie</h4>
+    
+    </div>
+    
+  </div>
+</div>
+
+<?php
+       
+   }
+               }),   
+
+               $client->getAsync('https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=1d7e6113ac773874aaf2758983f681eb&user_id=146944136@N03&text=Urbansoccer&per_page=1&format=json&nojsoncallback=1')->then(function ($response) {
+
+                $data = json_decode($response->getBody(), true);
+                $photos= $data['photos']['photo'];
+   foreach($photos as $photo) {
+       $url1= 'http://farm'.$photo['farm'].'.staticflickr.com/'.$photo['server'].'/'.$photo['id'].'_'.$photo['secret'].'.jpg';
+       ?>
+
+
+<div class="container">
+  <div class="row">
+<div class="col-sm">
+<img src="<?php echo $url1; ?>">
+    </div>
+    <div class="col-sm">
+    <h1> Terrain synthétique 5vs5</h1>
+    <h4>Privilégier des crampons TURF</h4>
+    
+    </div>
+    
+  </div>
+</div>
+
+<?php
+       
+   }
+               }),            
+               
+               
+  
+];
+
+$results = GuzzleHttp\Promise\unwrap($promises);
+
+// Wait for the requests to complete, even if some of them fail
+$results = GuzzleHttp\Promise\settle($promises)->wait();
+
+
+
+?>
+    
+    </div>
+    
+    
             </div>
         </section>
         <!-- Footer-->
